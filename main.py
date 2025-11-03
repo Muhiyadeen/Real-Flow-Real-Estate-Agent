@@ -90,6 +90,7 @@ def receive_webhook():
 # GET: Read-only viewer on the same endpoint
 #   - GET /webhook                   -> list recent logs (up to 20)
 #   - GET /webhook?call_id=<id>      -> fetch a specific log
+
 @app.route("/webhook", methods=["GET"])
 def list_or_get_logs():
     # Optional token gate for demo security
@@ -97,16 +98,24 @@ def list_or_get_logs():
         return jsonify({"error": "unauthorized"}), 401
 
     os.makedirs(LOG_DIR, exist_ok=True)
-
     call_id = request.args.get("call_id")
+
+    # --- Specific log view ---
     if call_id:
         path = os.path.join(LOG_DIR, f"{call_id}.json")
         if os.path.exists(path):
             with open(path) as f:
                 doc = json.load(f)
-            return jsonify(_scrub_doc(doc)), 200
+            # ✅ Force pretty-printed JSON
+            pretty = json.dumps(_scrub_doc(doc), indent=4, ensure_ascii=False)
+            return app.response_class(
+                response=pretty,
+                status=200,
+                mimetype="application/json"
+            )
         return jsonify({"error": "not found", "call_id": call_id}), 404
 
+    # --- List view (latest logs) ---
     files = []
     for p in glob.glob(os.path.join(LOG_DIR, "*.json")):
         ts = os.path.getmtime(p)
@@ -115,8 +124,10 @@ def list_or_get_logs():
             "modified": int(ts),
             "modified_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(ts))
         })
+
     files.sort(key=lambda x: x["modified"], reverse=True)
-    return jsonify({"count": len(files), "latest": files[:20]}), 200
+    pretty = json.dumps({"count": len(files), "latest": files[:20]}, indent=4, ensure_ascii=False)
+    return app.response_class(response=pretty, status=200, mimetype="application/json")
 
 
 # ---------- Entrypoint ----------
