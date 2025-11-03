@@ -1,0 +1,26 @@
+{
+  "call_id": "019a466c-3769-7556-a652-7d1e3de51ec3",
+  "call_details": {
+    "Set_Lead_Field": {
+      "name": "Set_Lead_Field",
+      "arguments": {
+        "full_name": "Matthew",
+        "phone": "9176697868",
+        "email": "Matthew2912@gmail.com",
+        "location": "Bangalore",
+        "property_type": "Retail",
+        "deal_size": "300000",
+        "caller_role": "Seller",
+        "urgency": "2 weeks",
+        "intent": "sell"
+      }
+    },
+    "Submit_Lead": {
+      "name": "Submit_Lead",
+      "arguments": {
+        "consent": true,
+        "summary": "Caller Matthew is looking to sell a retail property in Bangalore, India, with an approximate deal size of $300,000. He is ready to proceed in 2 weeks and has agreed to share his information for follow-up."
+      }
+    }
+  }
+}

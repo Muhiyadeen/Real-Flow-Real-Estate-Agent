@@ -1,0 +1,24 @@
+{
+  "call_id": "019a49ed-ade3-7bb6-8178-6d89428ffcde",
+  "call_details": {
+    "Set_Lead_Field": {
+      "name": "Set_Lead_Field",
+      "arguments": {
+        "full_name": "Abdul",
+        "phone": "9500036123",
+        "location": "Bangalore",
+        "property_type": "industrial",
+        "deal_size": "2000 thousand dollars",
+        "urgency": "2 months",
+        "email": "abdul@gmail.com"
+      }
+    },
+    "Submit_Lead": {
+      "name": "Submit_Lead",
+      "arguments": {
+        "consent": true,
+        "summary": "Abdul is interested in industrial spaces in Bangalore, with a deal size of approximately $2,000,000, aiming for a timeline of 2 months. Contact: 9500036123, Email: abdul@gmail.com"
+      }
+    }
+  }
+}
