@@ -15,7 +15,10 @@ MASK_PII = os.getenv("MASK_PII", "false").lower() == "true"
 
 # --- App ---
 app = Flask(__name__)
-ensure_logs_dir()  # make sure logs/call_logs exists
+app.config["JSONIFY_PRETTYPRINT_REGULAR"] = True
+app.config["JSON_SORT_KEYS"] = False
+ensure_logs_dir()
+
 
 
 # ---------- Helpers (masking for read-only views) ----------
