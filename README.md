@@ -18,7 +18,39 @@ curl https://real-flow-real-estate-agent-production.up.railway.app/
 
 **Post test**
 ```bash
-curl -X POST https://real-flow-real-estate-agent-production.up.railway.app/webhook   -H "Content-Type: application/json"   -d '{"message":{"call":{"id":"railway-testing"},"toolCalls":[{"function":{"name":"Set_Lead_Field","arguments":{"field":"full_name","value":"Realflow Test"}}}]}}'
+curl -X POST https://real-flow-real-estate-agent-production.up.railway.app/webhook \
+  -H "Content-Type: application/json" \
+  -d '{
+    "message": {
+      "call": { "id": "railway-testing" },
+      "toolCalls": [
+        {
+          "function": {
+            "name": "Set_Lead_Field",
+            "arguments": {
+              "full_name": "Gokul",
+              "phone": "9879879879",
+              "email": "gokul@gmail .com",
+              "location": "Bangalore",
+              "deal_size": "200K dollars",
+              "urgency": "2 months",
+              "intent": "sell"
+            }
+          }
+        },
+        {
+          "function": {
+            "name": "Submit_Lead",
+            "arguments": {
+              "consent": true,
+              "summary": "Gokul wants to sell a commercial property in Bangalore with an estimated deal size of about $200,000 and a target timeline of 2 months. Contact: 9879879879, Email: gokul@gmail .com."
+            }
+          }
+        }
+      ]
+    }
+  }'
+
 ```
 
 **View logs**
