@@ -1,5 +1,3 @@
-# main.py  (rename to app.py if you prefer; adjust gunicorn entry accordingly)
-
 import os
 import json
 import glob
@@ -10,7 +8,7 @@ from utils import ensure_logs_dir, extract_and_update_call_state
 # --- Config ---
 BASE_DIR = os.path.abspath(os.getcwd())
 LOG_DIR = os.path.join(BASE_DIR, "logs", "call_logs")
-READ_TOKEN = os.getenv("READ_TOKEN", "").strip()        # optional: set in Railway Variables
+READ_TOKEN = os.getenv("READ_TOKEN", "").strip()        #
 MASK_PII = os.getenv("MASK_PII", "false").lower() == "true"
 
 # --- App ---
@@ -66,7 +64,6 @@ def ping():
 @app.route("/webhook", methods=["POST"])
 def receive_webhook():
     try:
-        # Use silent=True to avoid exceptions on wrong/missing Content-Type
         data = request.get_json(silent=True)
 
         if data is None:
