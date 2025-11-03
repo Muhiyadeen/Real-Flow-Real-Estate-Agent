@@ -1,4 +1,4 @@
-# Realflow AI Agent Webhook
+# Realflow Real Estate AI Agent 
 
 A simple Flask-based webhook server for the Realflow AI-driven real estate assistant.  
 It logs inbound AI call data and displays them as formatted JSON via HTTP endpoints.
@@ -9,7 +9,6 @@ It logs inbound AI call data and displays them as formatted JSON via HTTP endpoi
 - `/webhook?call_id=<id>` **GET** → Shows one log (pretty JSON)  
 - Deployed on **Railway**
 
-## ⚙️ Setup
 ## 🔗 Test Commands
 
 **Health check**
