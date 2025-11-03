@@ -1,14 +1,69 @@
+# main.py  (rename to app.py if you prefer; adjust gunicorn entry accordingly)
+
 import os
+import json
+import glob
+import time
 from flask import Flask, request, jsonify
 from utils import ensure_logs_dir, extract_and_update_call_state
 
-app = Flask(__name__)
-ensure_logs_dir()
+# --- Config ---
+BASE_DIR = os.path.abspath(os.getcwd())
+LOG_DIR = os.path.join(BASE_DIR, "logs", "call_logs")
+READ_TOKEN = os.getenv("READ_TOKEN", "").strip()        # optional: set in Railway Variables
+MASK_PII = os.getenv("MASK_PII", "false").lower() == "true"
 
-@app.route('/webhook', methods=['POST'])
+# --- App ---
+app = Flask(__name__)
+ensure_logs_dir()  # make sure logs/call_logs exists
+
+
+# ---------- Helpers (masking for read-only views) ----------
+
+def _mask_phone(phone: str) -> str:
+    if not isinstance(phone, str) or len(phone) < 5:
+        return "•••"
+    return phone[:2] + "•••" + phone[-2:]
+
+def _mask_email(email: str) -> str:
+    if not isinstance(email, str) or "@" not in email:
+        return "•••"
+    local, _, domain = email.partition("@")
+    shown_local = local[:2] + "•••" if len(local) > 2 else "•••"
+    return f"{shown_local}@{domain}"
+
+def _scrub_doc(doc: dict) -> dict:
+    if not MASK_PII:
+        return doc
+    try:
+        d = json.loads(json.dumps(doc))  # deep copy
+        args = d["call_details"]["Set_Lead_Field"]["arguments"]
+        if "phone" in args:
+            args["phone"] = _mask_phone(args["phone"])
+        if "email" in args:
+            args["email"] = _mask_email(args["email"])
+        return d
+    except Exception:
+        return doc
+
+
+# ---------- Routes ----------
+
+@app.route("/", methods=["GET"])
+def health_check():
+    return jsonify({"message": "Webhook server running ✅"}), 200
+
+
+@app.route("/ping", methods=["POST"])
+def ping():
+    return jsonify({"ok": True}), 200
+
+
+# POST: Vapi -> your webhook (store/update call logs)
+@app.route("/webhook", methods=["POST"])
 def receive_webhook():
     try:
-        # More forgiving than force=True; avoids exceptions on bad headers
+        # Use silent=True to avoid exceptions on wrong/missing Content-Type
         data = request.get_json(silent=True)
 
         if data is None:
@@ -25,15 +80,44 @@ def receive_webhook():
         return jsonify({"status": "webhook received", "call_id": call_id}), 200
 
     except Exception as e:
-        # Never let exceptions bubble up to Railway (prevents 502)
-        app.logger.exception(f"/webhook error: {e}")
+        app.logger.exception("/webhook error")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/', methods=['GET'])
-def health_check():
-    return jsonify({"message": "Webhook server running ✅"}), 200
 
+# GET: Read-only viewer on the same endpoint
+#   - GET /webhook                   -> list recent logs (up to 20)
+#   - GET /webhook?call_id=<id>      -> fetch a specific log
+@app.route("/webhook", methods=["GET"])
+def list_or_get_logs():
+    # Optional token gate for demo security
+    if READ_TOKEN and request.args.get("token") != READ_TOKEN:
+        return jsonify({"error": "unauthorized"}), 401
+
+    os.makedirs(LOG_DIR, exist_ok=True)
+
+    call_id = request.args.get("call_id")
+    if call_id:
+        path = os.path.join(LOG_DIR, f"{call_id}.json")
+        if os.path.exists(path):
+            with open(path) as f:
+                doc = json.load(f)
+            return jsonify(_scrub_doc(doc)), 200
+        return jsonify({"error": "not found", "call_id": call_id}), 404
+
+    files = []
+    for p in glob.glob(os.path.join(LOG_DIR, "*.json")):
+        ts = os.path.getmtime(p)
+        files.append({
+            "call_id": os.path.splitext(os.path.basename(p))[0],
+            "modified": int(ts),
+            "modified_iso": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(ts))
+        })
+    files.sort(key=lambda x: x["modified"], reverse=True)
+    return jsonify({"count": len(files), "latest": files[:20]}), 200
+
+
+# ---------- Entrypoint ----------
 if __name__ == "__main__":
-    # Use Railway's injected PORT if available; default to 8080
+    # Railway/Render inject PORT; default to 8080 for local dev
     port = int(os.environ.get("PORT", 8080))
     app.run(host="0.0.0.0", port=port)
