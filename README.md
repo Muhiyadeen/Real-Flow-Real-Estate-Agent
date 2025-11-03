@@ -10,44 +10,26 @@ It logs inbound AI call data and displays them as formatted JSON via HTTP endpoi
 - Deployed on **Railway**
 
 ## ⚙️ Setup
-
-**Local Run**
-```bash
-pip install -r requirements.txt
-python main.py
-```
-
-**Expose via ngrok**
-```bash
-ngrok http 8080
-```
-
-**Deploy to Railway**
-- Add `PORT=8080` under Variables  
-- Start command: `gunicorn main:app`  
-- Optional:
-  - `READ_TOKEN=<token>` (secure access)
-  - `MASK_PII=true` (hide emails/phones)
-
 ## 🔗 Test Commands
 
 **Health check**
 ```bash
-curl https://<your-url>.railway.app/
+curl https://real-flow-real-estate-agent-production.up.railway.app/
 ```
 
 **Post test**
 ```bash
-curl -X POST https://<your-url>.railway.app/webhook   -H "Content-Type: application/json"   -d '{"message":{"call":{"id":"railway-test-1"},"toolCalls":[{"function":{"name":"Set_Lead_Field","arguments":{"field":"full_name","value":"Alex Test"}}}]}}'
+curl -X POST https://real-flow-real-estate-agent-production.up.railway.app/webhook   -H "Content-Type: application/json"   -d '{"message":{"call":{"id":"railway-testing"},"toolCalls":[{"function":{"name":"Set_Lead_Field","arguments":{"field":"full_name","value":"Realflow Test"}}}]}}'
 ```
 
 **View logs**
-- All: `https://<your-url>.railway.app/webhook`
-- One: `https://<your-url>.railway.app/webhook?call_id=railway-test-1`
+- All: `https://real-flow-real-estate-agent-production.up.railway.app/webhook`
+- One: `https://<your-url>.railway.app/webhook?call_id=railway-testing`
+- View a previous Vapi call logs: `https://real-flow-real-estate-agent-production.up.railway.app/webhook?call_id=caller_id_019a49ed-ade3-7bb6-8178-6d89428ffcde`
 
 ## 📎 Example
 **Deployed Link:**  
 [https://real-flow-real-estate-agent-production.up.railway.app/webhook](https://real-flow-real-estate-agent-production.up.railway.app/webhook)
 
-**Author:** Riyas Muhiyadeen  
+**Author:** Muhiyadeen  
 **Stack:** Python · Flask · Railway · Gunicorn
